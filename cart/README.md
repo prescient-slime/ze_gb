@@ -7,7 +7,18 @@ hardware it expects to run on.
 
 ## MBC
 
-Most GameBoy games are larger than the ram provided by the SoC in the GameBoy
-itself. To address this, cartridges contain a component called the `MBC`, or
-"Memory Bank Controller", which expands the available address space for the
+Most GameBoy games are larger than the 32KB address space provided by the GameBoy
+itself. To overcome this limitation, cartridges contain use something called the
+`MBC`, or "Memory Bank Controller", which expands the available address space for the
 system via bank switching.
+
+## Design
+
+### Responsibilities
+
+The cartridge class must:
+
+- Read various ROMs made for the GameBoy
+- Serve ROM reads to other emulator components
+- Implement necessary MBC logic
+- Provide external RAM if specified by the loaded ROM
