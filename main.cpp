@@ -1,15 +1,14 @@
 #include "cart/cartridge.h"
 
-#include <algorithm>
 #include <format>
-#include <iostream>
 #include <print>
-#include <ranges>
+#include <span>
 
 auto main(int argc, char* argv[]) -> int
 {
-    cartridge cart{};
-    cart.load_rom(argv[1]);
-    std::print("Loading rom {}\n", argv[1]);
+    std::span<char*> args{argv, static_cast<size_t>(argc)};
+    RomOnly cart{};
+    cart.load_rom(args[1]);
+    std::print("Loading rom {}\n", args[1]);
     return 0;
 }
