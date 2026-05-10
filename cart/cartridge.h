@@ -1,38 +1,38 @@
 #ifndef CARTRIDGE_H
 #define CARTRIDGE_H
 
-#include <cstdint>
-#include <string>
+#include <cstddef>
+#include <filesystem>
+#include <fstream>
+#include <iostream>
+#include <print>
+#include <ranges>
 #include <vector>
 
-class Cartridge
-{
-
-public:
-    virtual ~Cartridge() = default;
-    auto operator=(const Cartridge&) -> Cartridge& = delete;
-    auto operator=(Cartridge&&) -> Cartridge& = delete;
-    Cartridge(Cartridge&& other) = delete;
-    Cartridge(Cartridge& other) = delete;
-
-    virtual auto load_rom(std::string const& path) -> void = 0;
-    [[nodiscard]] virtual auto read_byte(uint16_t target) noexcept
-        -> unsigned char = 0;
-
-protected:
-    Cartridge() = default;
-};
-
-class RomOnly : public Cartridge
-{
-public:
-    RomOnly() = default;
-    auto load_rom(std::string const& path) -> void override;
-    [[nodiscard]] auto read_byte(uint16_t target) noexcept -> unsigned char override;
-
-private:
-    std::vector<unsigned char> header_data_;
-    std::vector<unsigned char> data_;
+struct cartridge {
+  std::vector<std::byte> data;
+  auto load_rom(std::filesystem::path const &rom_path) -> void {
+    std::ifstream rom_stream{rom_path, std::ios::binary | std::ios::in};
+    std::error_code error{};
+    auto rom_size{std::filesystem::file_size(rom_path, error)};
+    if (error) {
+      std::print(std::cerr, "Failed to get ROM size: {}", error.message());
+    }
+    data.resize(rom_size);
+    if (!rom_stream.read(reinterpret_cast<char *>(data.data()),
+                         static_cast<std::streamsize>(rom_size))) {
+      throw std::runtime_error{"Failed to read " + rom_path.string()};
+    }
+  }
+  auto print_rom() -> void {
+    for (auto const &chunk : data | std::views::chunk(0x10)) {
+      std::print("[ ");
+      for (auto const &b : chunk) {
+        std::print("{:02x} ", static_cast<unsigned>(b));
+      }
+      std::print("]\n");
+    }
+  }
 };
 
 #endif
